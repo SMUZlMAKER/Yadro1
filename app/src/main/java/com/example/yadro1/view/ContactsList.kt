@@ -45,7 +45,7 @@ import com.example.yadro1.data.Contact
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
-fun Contact(modifier: Modifier = Modifier, viewModel: ContactsViewModel) {
+fun ContactsAndPermissions(modifier: Modifier = Modifier, viewModel: ContactsViewModel) {
     val context = LocalContext.current
     val showContactsDialog = viewModel.isContactsPermissionDialogShown.collectAsState()
     val showCallDialog = viewModel.isCallPermissionDialogShown.collectAsState()
