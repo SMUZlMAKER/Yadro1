@@ -5,6 +5,7 @@ import android.content.Intent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -33,6 +34,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.ColorFilter
@@ -54,6 +56,7 @@ fun Contact(modifier: Modifier = Modifier, viewModel: ContactsViewModel) {
         )
     )
 
+    LaunchedEffect(Unit) { contactsAndCallPermissions.launchMultiplePermissionRequest() }
 
     viewModel.changePermissionToContacts(contactsAndCallPermissions.permissions[0].status.isGranted)
     if (showContactsDialog.value)
@@ -81,47 +84,51 @@ fun ContactsList(
     val isCallPermissionGranted = viewModel.isCallPermissionGranted.collectAsState()
 
     if (isContactsPermissionGranted.value)
-        viewModel.loadContacts(context)
+        viewModel.loadContacts(context.applicationContext)
 
     val groupedContacts by viewModel.groupedContacts.collectAsState(emptyMap())
-
     if (isContactsPermissionGranted.value) {
-        LazyColumn(modifier = modifier.fillMaxSize()) {
-            groupedContacts.map { (letter, contacts) ->
-                stickyHeader {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .background(MaterialTheme.colorScheme.primaryContainer)
-                            .padding(start = 12.dp, top = 6.dp, bottom = 6.dp)
-                    ) {
-                        Text(
-                            text = letter,
-                            style = TextStyle(
-                                color = MaterialTheme.colorScheme.primary,
-                                fontSize = 20.sp
-                            ),
-                            fontWeight = FontWeight.Bold,
-                        )
-                    }
-                }
-                items(contacts) { contact ->
-                    ContactListItem(contact = contact, onCallClick = {
-
-                        if (!isCallPermissionGranted.value) {
-                            viewModel.showCallPermissionDialog()
-
-                        } else {
-                            val intent =
-                                Intent(Intent.ACTION_CALL, "tel:${contact.phoneNumber}".toUri())
-                            context.startActivity(intent)
+        if (groupedContacts.isEmpty())
+            Box(modifier = modifier.fillMaxSize(),contentAlignment = Alignment.Center) {
+                Text("Нет контактов для отображения")
+            }
+        else
+            LazyColumn(modifier = modifier.fillMaxSize()) {
+                groupedContacts.map { (letter, contacts) ->
+                    stickyHeader {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(MaterialTheme.colorScheme.primaryContainer)
+                                .padding(start = 12.dp, top = 6.dp, bottom = 6.dp)
+                        ) {
+                            Text(
+                                text = letter,
+                                style = TextStyle(
+                                    color = MaterialTheme.colorScheme.primary,
+                                    fontSize = 20.sp
+                                ),
+                                fontWeight = FontWeight.Bold,
+                            )
                         }
-                    })
+                    }
+                    items(contacts) { contact ->
+                        ContactListItem(contact = contact, onCallClick = {
+
+                            if (!isCallPermissionGranted.value) {
+                                viewModel.showCallPermissionDialog()
+
+                            } else {
+                                val intent =
+                                    Intent(Intent.ACTION_CALL, "tel:${contact.phoneNumber}".toUri())
+                                context.startActivity(intent)
+                            }
+                        })
+                    }
+
                 }
 
             }
-
-        }
     }
 }
 

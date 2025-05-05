@@ -38,7 +38,7 @@ private fun RequestPermission(
     var lambda = { permissionState.launchPermissionRequest() }
     var message = "Предоставьте в следующем окне"
 
-    if (permissionState.status.shouldShowRationale) {
+    if (!permissionState.status.shouldShowRationale) {
         val intent = Intent(
             Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
             Uri.fromParts(
@@ -51,9 +51,8 @@ private fun RequestPermission(
         lambda = { context.startActivity(intent) }
         message = "\nПредоставьте его в настройках."
     }
-    var title = ""
     if (permissionState.permission == "android.permission.READ_CONTACTS") {
-        title = "Для отображения контактов требуется разрешение."
+        val title = "Для отображения контактов требуется разрешение."
         AlertDialog(
             onDismissRequest = {},
             confirmButton = {
@@ -65,7 +64,7 @@ private fun RequestPermission(
             text = { Text(message) },
         )
     } else {
-        title = "Для совершения звонка требуется разрешение."
+        val title = "Для совершения звонка требуется разрешение."
         AlertDialog(
             onDismissRequest = onDismiss,
             confirmButton = {
